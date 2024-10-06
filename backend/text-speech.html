@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text to Speech</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    input[type="range"] {
+      width: calc(100% - 100px);
+      vertical-align: middle;
+    }
+
+    .rate-value, .pitch-value {
+      display: inline-block;
+      width: 40px;
+      text-align: center;
+    }
+
+    label {
+      display: inline-block;
+      width: 50px;
+      margin-right: 10px;
+    }
+
+    .clearfix {
+      clear: both;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .pause-resume {
+      background-color: #f39c12; /* Orange color for pause/resume button */
+    }
+
+    .pause-resume:hover {
+      background-color: #e67e22; /* Darker orange on hover */
+    }
+  </style>
+</head>
+<body>
+
+<h1>Speech Synthesizer</h1>
+
+<p>
+  Enter some text in the input below and press "Enter" to hear it. Change voices using the dropdown menu.
+</p>
+
+<form>
+  <input type="text" class="txt" placeholder="Enter text here" />
+
+  <div class="controls">
+    <label for="rate">Rate</label>
+    <input type="range" min="0.5" max="2" value="1" step="0.1" id="rate" />
+    <div class="rate-value">1</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="controls">
+    <label for="pitch">Pitch</label>
+    <input type="range" min="0" max="2" value="1" step="0.1" id="pitch" />
+    <div class="pitch-value">1</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <select>
+    <option value="">Select a voice</option>
+  </select>
+
+  <button type="submit">Enter</button>
+  <button type="button" class="pause-resume" id="pauseResumeBtn">Pause</button>
+</form>
+
+<script>
+  const synth = window.speechSynthesis;
+
+  const inputForm = document.querySelector("form");
+  const inputTxt = document.querySelector(".txt");
+  const voiceSelect = document.querySelector("select");
+
+  const pitch = document.querySelector("#pitch");
+  const pitchValue = document.querySelector(".pitch-value");
+  const rate = document.querySelector("#rate");
+  const rateValue = document.querySelector(".rate-value");
+
+  let voices = [];
+  let utterance; // To store the current utterance
+  let isPaused = false; // To track if the speech is paused
+
+  // Populate the voice list
+  function populateVoiceList() {
+    voices = synth.getVoices();
+
+    // Clear existing voices from the select
+    voiceSelect.innerHTML = "";
+    for (const voice of voices) {
+      const option = document.createElement("option");
+      option.textContent = `${voice.name} (${voice.lang})`;
+
+      if (voice.default) {
+        option.textContent += " — DEFAULT";
+      }
+
+      option.setAttribute("data-lang", voice.lang);
+      option.setAttribute("data-name", voice.name);
+      voiceSelect.appendChild(option);
+    }
+  }
+
+  populateVoiceList();
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = populateVoiceList;
+  }
+
+  inputForm.onsubmit = (event) => {
+    event.preventDefault();
+
+    utterance = new SpeechSynthesisUtterance(inputTxt.value);
+    const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+
+    for (const voice of voices) {
+      if (voice.name === selectedOption) {
+        utterance.voice = voice;
+      }
+    }
+
+    utterance.pitch = pitch.value;
+    utterance.rate = rate.value;
+
+    synth.speak(utterance);
+
+    utterance.onpause = (event) => {
+      const char = event.utterance.text.charAt(event.charIndex);
+      console.log(
+        `Speech paused at character ${event.charIndex} of "${event.utterance.text}", which is "${char}".`
+      );
+    };
+
+    inputTxt.blur();
+  };
+
+  // Pause/Resume functionality
+  const pauseResumeBtn = document.getElementById("pauseResumeBtn");
+  pauseResumeBtn.onclick = () => {
+    if (synth.speaking) {
+      if (isPaused) {
+        synth.resume(); // Resume speaking
+        pauseResumeBtn.textContent = "Pause";
+      } else {
+        synth.pause(); // Pause speaking
+        pauseResumeBtn.textContent = "Resume";
+      }
+      isPaused = !isPaused; // Toggle pause state
+    }
+  };
+
+  pitch.onchange = () => {
+    pitchValue.textContent = pitch.value;
+  };
+
+  rate.onchange = () => {
+    rateValue.textContent = rate.value;
+  };
+</script>
+
+</body>
+</html>
