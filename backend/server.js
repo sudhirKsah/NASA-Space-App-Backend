@@ -1,5 +1,4 @@
 
-
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -81,7 +80,6 @@ app.post('/init', async (req, res) => {
         console.log("Weather data fetched:", weatherData);
 
         if (!locationPromptSent) {
-            // Send the location information to Gemini API only once
             await sendLocationToGemini(weatherData);
             locationPromptSent = true;
         }
@@ -97,7 +95,6 @@ app.post('/init', async (req, res) => {
 app.post('/crop-suggestion', async (req, res) => {
     const { cropType, startDate, endDate, city } = req.body;
 
-    // ContentText logic depending on city availability
     let contentText = `
         If ${cropType.length > 0 ? cropType.join(", ") : "local crop"} crops are planted 
         between ${startDate || "unspecified date"} and ${endDate || "unspecified date"} 
