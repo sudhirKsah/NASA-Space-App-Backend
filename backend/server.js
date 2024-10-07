@@ -20,8 +20,8 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(cors());
 
-let weatherData = null;  // Store weather data globally to be used in different tasks
-let locationPromptSent = false;  // To check if location information has been sent to Gemini
+let weatherData = null; 
+let locationPromptSent = false;  
 
 // Function to fetch weather data from OpenWeatherMap
 async function fetchWeatherData(latitude, longitude) {
@@ -131,8 +131,7 @@ app.post('/crop-suggestion', async (req, res) => {
         );
 
         const suggestionsParts = response.data.candidates[0].content.parts;
-        const suggestionsText = suggestionsParts.map(part => part.text).join(''); // Extract all parts
-
+        const suggestionsText = suggestionsParts.map(part => part.text).join(''); 
         console.log("Crop suggestions from Gemini:", suggestionsText);
 
         res.json({ cropSuggestions: suggestionsText });
@@ -146,7 +145,6 @@ app.post('/crop-suggestion', async (req, res) => {
 
 const upload = multer({ dest: 'uploads/' });
 
-// Gemini API details
 const model = "gemini-1.5-pro-latest";
 const GENAI_DISCOVERY_URL = `https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta&key=${process.env.GEMINI_API_KEY}`;
 
@@ -203,37 +201,31 @@ app.post('/plant-health', upload.single('plantImage'), async (req, res) => {
   let imagePath = null;
 
   try {
-    // Check if the image is uploaded
     if (!req.file) {
       return res.status(400).json({ message: 'No image file uploaded.' });
     }
 
-    imagePath = req.file.path; // Get the uploaded file path
-    const fileMimeType = req.file.mimetype; // Get the MIME type of the uploaded file
+    imagePath = req.file.path; 
+    const fileMimeType = req.file.mimetype; 
 
-    // Read the file content to send it in the API request
     const fileContent = fs.readFileSync(imagePath, { encoding: 'base64' });
 
-    // Construct the prompt to analyze the plant image
     const promptText = `
       Analyze the health of the plant based on the uploaded image.
       - Identify potential diseases or unhealthy conditions.
       - Provide suggestions for preventive measures and treatment.
     `;
 
-    // Call the function to get plant health analysis
     const plantHealthSuggestions = await getPlantHealthAnalysis(promptText, fileContent, fileMimeType);
 
-    // Log and return the suggestions
     console.log("Plant health suggestions from Gemini:", plantHealthSuggestions);
     res.json({ plantHealthSuggestions });
   } catch (error) {
     console.error("Error fetching plant health suggestions from Gemini:", error);
     res.status(500).json({ message: 'Error fetching plant health suggestions', error });
   } finally {
-    // Optionally, clean up the uploaded file after processing
     if (imagePath) {
-      fs.unlinkSync(imagePath); // Delete the file if it exists
+      fs.unlinkSync(imagePath); 
     }
   }
 });
@@ -274,7 +266,7 @@ app.post('/water-level', async (req, res) => {
         );
 
         const suggestionsParts = response.data.candidates[0].content.parts;
-        const suggestionsText = suggestionsParts.map(part => part.text).join(''); // Extract all parts
+        const suggestionsText = suggestionsParts.map(part => part.text).join(''); 
 
         console.log("Water level suggestions from Gemini:", suggestionsText);
 
@@ -365,7 +357,6 @@ app.post('/generate-plan-report', async (req, res) => {
         res.json({ planReport });
         console.log("Plan report from Gemini:", planReport);
     }
-
     catch (error) {
         console.error("Error fetching plan report from Gemini:", error);
         res.status(500).json({ message: 'Error fetching plan report', error });
@@ -377,7 +368,6 @@ app.post('/generate-plan-report', async (req, res) => {
 app.post('/mega-assistant', async (req, res) => {
     const userMessage = req.body.message;
 
-    // Add the user message to the chat history
     chatHistory.push({ role: 'user', text: userMessage });
 
     const chatContext = chatHistory.map(entry => ({
@@ -416,7 +406,6 @@ app.post('/mega-assistant', async (req, res) => {
 
         const assistantMessage = response.data.candidates[0].content.parts.map(part => part.text).join('');
         
-        // Add the assistant's message to the chat history
         chatHistory.push({ role: 'assistant', text: assistantMessage });
 
         console.log("Mega assistant response from Gemini:", assistantMessage);
@@ -430,7 +419,7 @@ app.post('/mega-assistant', async (req, res) => {
 
 // Optional route to reset chat history
 app.post('/reset-chat', (req, res) => {
-    chatHistory = [];  // Clear the chat history
+    chatHistory = [];  
     res.json({ message: 'Chat history reset.' });
 });
 
