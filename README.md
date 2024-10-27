@@ -19,4 +19,3 @@ AgroMaster is a smart farming assistant designed to provide real-time, data-driv
 - 🌱 Crop Prediction: Recommendations for crop planting are based on the weather and soil conditions.
 - 🗺️ NASA Earthdata APIs: Fetch and process soil moisture, water levels, and vegetation data using NASA's geospatial datasets.
 - 🧠 Google Gemini API Integration: AI-powered crop suggestions based on current conditions and user inputs.
-- 🔄 Text-to-Speech: Convert crop suggestions into voice.
